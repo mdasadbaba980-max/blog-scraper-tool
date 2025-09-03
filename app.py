@@ -80,10 +80,6 @@ if st.button("🚀 Generate Sites"):
         else:
             st.warning("⚠️ No sites found. Try another keyword.")
 
-                    else:
-            st.warning("⚠️ No sites found. Try another keyword.")
-
 # ---------------- Footer ----------------
 st.markdown("---")
 st.markdown("👨‍💻 **Author:** Ahmed Raza  |  👩‍💼 **Director:** Sania")
-
