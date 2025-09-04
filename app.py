@@ -3,9 +3,9 @@ import pandas as pd
 import requests
 import time
 
-# 🔑 Apni API Key
+# 🔑 Apni API Key yahan daalein
 API_KEY = "af3e3d615cb623341c2b05db409e0a3880d4379fa6891adf99191946fb2ba05b"
-SEARCH_URL = "https://serpapi.com/search"
+SEARCH_URL = "https://serpapi.com/search.json"
 
 # ---------------- Streamlit UI ----------------
 st.set_page_config(page_title="Blogging Site Scraper", page_icon="🔎", layout="centered")
@@ -22,6 +22,8 @@ num_results = st.selectbox("📌 Select number of sites:", options, index=1)
 if st.button("🚀 Generate Sites"):
     if not keyword.strip():
         st.error("❌ Please enter a keyword.")
+    elif not API_KEY or API_KEY == "PASTE_YOUR_API_KEY_HERE":
+        st.error("❌ Please add your SerpAPI key in the script!")
     else:
         st.info(f"🔍 Searching for **{keyword}** ... Please wait ⏳")
 
@@ -29,8 +31,7 @@ if st.button("🚀 Generate Sites"):
         status_text = st.empty()
 
         all_links = []
-        results_data = []
-        pages = num_results // 20  # Har page ~20 results deta hai
+        pages = num_results // 20  # har page par ~20 results aate hain
 
         for i, start in enumerate(range(0, num_results, 20)):
             params = {
@@ -38,28 +39,23 @@ if st.button("🚀 Generate Sites"):
                 "q": f"{keyword} site:.us",
                 "api_key": API_KEY,
                 "start": start,
-                "num": 20,
-                "hl": "en",
-                "gl": "us"
+                "num": 20
             }
             try:
                 response = requests.get(SEARCH_URL, params=params)
                 data = response.json()
 
                 if "organic_results" in data:
-                    for item in data["organic_results"]:
-                        title = item.get("title")
-                        link = item.get("link")
-                        if link and link not in all_links:
-                            all_links.append(link)
-                            results_data.append({"Title": title, "URL": link})
+                    for result in data["organic_results"]:
+                        if "link" in result:
+                            all_links.append(result["link"])
 
                 # Update progress
                 progress = int(((i + 1) / pages) * 100)
                 progress_bar.progress(progress)
                 status_text.text(f"Scraping progress: {progress}% ({len(all_links)} sites found)")
 
-                time.sleep(1)  # API rate limit se bachne ke liye
+                time.sleep(1)  # rate limit avoid karne ke liye
             except Exception as e:
                 st.error(f"⚠️ Error: {e}")
                 break
@@ -67,11 +63,11 @@ if st.button("🚀 Generate Sites"):
         progress_bar.empty()
         status_text.empty()
 
-        if results_data:
-            df = pd.DataFrame(results_data)
+        if all_links:
+            df = pd.DataFrame(all_links, columns=["Website URLs"])
             
-            st.success(f"✅ Done! {len(df)} sites found.")
-            st.dataframe(df.head(50))  # sirf pehle 50 show karna
+            st.success(f"✅ Done! {len(all_links)} sites found.")
+            st.dataframe(df.head(50))  # sirf 50 show karo
 
             # Excel file download
             excel_file = "scraped_sites.xlsx"
@@ -87,4 +83,4 @@ if st.button("🚀 Generate Sites"):
 
 # ---------------- Footer ----------------
 st.markdown("---")
-st.markdown("👨‍💻 **Author:** Ahmed Raza **)
+st.markdown("👨‍💻 **Author:** Ahmed Raza  |  👩‍💼 **Director:** Sania")
